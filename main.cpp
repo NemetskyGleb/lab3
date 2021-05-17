@@ -1,8 +1,14 @@
-#include <QCoreApplication>
+#include <iostream>
+#include "Explorer.h"
+#include "GroupByFolders.h"
+#include "GroupByTypes.h"
 
-int main(int argc, char *argv[])
+int main()
 {
-    QCoreApplication a(argc, argv);
-
-    return a.exec();
+    IExplore* gpf = new GroupByFolders();
+    Explorer* e = new Explorer(gpf);
+    e->explore("C:/QtProjects/lab3/testFolder/");
+    delete gpf;
+    delete e;
+    return 0;
 }
