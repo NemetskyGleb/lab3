@@ -11,8 +11,8 @@ void GroupByTypes::getFileTypesAndSizes(const QString& path, QMap<QString, qint6
             if (it.isDir() && !it.isSymLink()) {
                 getFileTypesAndSizes(it.absoluteFilePath(), FileTypesList);
             } else  {
-                if (FileTypesList.keys().contains(it.suffix())) {
-                    FileTypesList[it.suffix().toLower()] += it.size();
+                if (FileTypesList.keys().contains(it.suffix().toLower())) {
+                    FileTypesList[it.suffix()] += it.size();
                 }
                 else {
                     FileTypesList.insert(it.suffix().toLower(), it.size());
@@ -35,20 +35,28 @@ void GroupByTypes::PrintFileTypesListAndPercents(const QMap<QString, qint64>& Fi
 {
     QTextStream out(stdout);
     // Обратная итерация, потому что в QMap с процентами, ключи сортируются по возрастанию
-    for (auto it = FileTypesPercantage.end() - 1; it != FileTypesPercantage.begin(); it--) {
+    if (FileTypesPercantage.isEmpty()) {
+        return;
+    }
+    for (auto it = FileTypesPercantage.end() - 1; it != FileTypesPercantage.begin() - 1; it--) {
         out  << Qt::left << qSetFieldWidth(15) <<   "*." + it.value() <<
                     qSetFieldWidth(10) << FileTypesList.value(it.value()) / 1024 <<
                     qSetFieldWidth(3) << "KB" <<
                     qSetFieldWidth(7) << QString::number(it.key(), 'f', 2) + "%" << Qt::endl;
     }
+    out.reset();
 }
 
 
 void GroupByTypes::explore(const QString& path)
 {
-    QFileInfo folder(path);
+    QDir folder(path);
     if (!folder.exists() && !folder.isReadable()) {
         qDebug() << "Error! Folder doesn't exist or it's symlink" << Qt::endl;
+        return;
+    }
+    if (folder.isEmpty()) {
+        qDebug() << "Folder is empty!" << Qt::endl;
         return;
     }
     QMap<QString, qint64> fileTypesList;
