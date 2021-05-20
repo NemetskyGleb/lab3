@@ -18,7 +18,10 @@ QMap<QString, double> GroupByFolders::getFoldersPercentOfTotal(qint64& totalSize
 {
 	QMap<QString, double> foldersListPercentage;
 	for (auto it = FoldersList.begin(); it != FoldersList.end(); ++it) {
-		auto percent = double(it.value() * 100) / totalSize;
+        auto percent = double(it.value() * 100) / totalSize;
+        // метка для слишком маленьких папок
+        if (percent < 0.01)
+            percent = -percent;
 		foldersListPercentage.insert(it.key(), percent);
 	}
 	return foldersListPercentage;
@@ -57,9 +60,11 @@ void GroupByFolders::PrintFoldersSizesAndPercentage(const QMap<QString, qint64>&
     QTextStream out(stdout);
     for (auto&& x : FoldersAndPercentage) {
             out << qSetFieldWidth(45) << Qt::left << x.second << qSetFieldWidth(10)  << FoldersAndTypes.value(x.second) / 1024
-                      << qSetFieldWidth(4)<< "KB"
-                      << qSetFieldWidth(8)<< QString::number(x.first, 'f', 2).append(" %")
-                      << "\n";
+                      << qSetFieldWidth(4)<< "KB";
+            if (x.first < 0) {
+                out << qSetFieldWidth(8) << "< 0.01 %\n";
+            } else
+                out << qSetFieldWidth(8) << QString::number(x.first, 'f', 2).append(" %") << "\n";
     }
 }
 

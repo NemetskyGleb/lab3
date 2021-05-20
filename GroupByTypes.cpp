@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDebug>
 
+
 void GroupByTypes::getFileTypesAndSizes(const QString& path, QMap<QString, qint64>& FileTypesList)
 {
     QDir dir(path);
@@ -21,28 +22,41 @@ void GroupByTypes::getFileTypesAndSizes(const QString& path, QMap<QString, qint6
     }
 }
 
-QMap<double, QString> GroupByTypes::getFileTypesPercentOfTotal(qint64& totalSize, QMap<QString, qint64>& FileTypesList) const
+QMap<QString, double> GroupByTypes::getFileTypesPercentOfTotal(qint64& totalSize, QMap<QString, qint64>& FileTypesList) const
 {
-    QMap<double, QString> FileTypesListPercentage;
+    QMap<QString, double> FileTypesListPercentage;
     for (auto it = FileTypesList.begin(); it != FileTypesList.end(); ++it) {
         auto percent = double(it.value() * 100) / totalSize;
-        FileTypesListPercentage.insert(percent, it.key());
+        if (percent < 0.01)
+            percent = -percent;
+        FileTypesListPercentage.insert(it.key(), percent);
     }
     return FileTypesListPercentage;
 }
 
-void GroupByTypes::PrintFileTypesListAndPercents(const QMap<QString, qint64>& FileTypesList, const QMap<double, QString>& FileTypesPercantage) const
+QList<QPair<double, QString>> GroupByTypes::sortByPercent(const QMap<QString, double>& FileTypesPercantage) {
+    QList<QPair<double, QString>> sortedMap;
+    for (auto x : FileTypesPercantage.keys()) {
+      sortedMap.append(QPair<double, QString>(FileTypesPercantage[x], x));
+    }
+    std::sort(sortedMap.begin(), sortedMap.end(), std::greater<QPair<double, QString>>());
+    return sortedMap;
+}
+
+void GroupByTypes::PrintFileTypesListAndPercents(const QMap<QString, qint64>& FileTypesList, const QList<QPair<double, QString>> FileTypesPercantage) const
 {
     QTextStream out(stdout);
-    // Обратная итерация, потому что в QMap с процентами, ключи сортируются по возрастанию
     if (FileTypesPercantage.isEmpty()) {
         return;
     }
-    for (auto it = FileTypesPercantage.end() - 1; it != FileTypesPercantage.begin() - 1; it--) {
-        out  << Qt::left << qSetFieldWidth(15) <<   "*." + it.value() <<
-                    qSetFieldWidth(10) << FileTypesList.value(it.value()) / 1024 <<
-                    qSetFieldWidth(3) << "KB" <<
-                    qSetFieldWidth(7) << QString::number(it.key(), 'f', 2) + "%" << Qt::endl;
+    for (auto&& x : FileTypesPercantage) {
+        out << qSetFieldWidth(15) <<   "*." + x.second <<
+                    qSetFieldWidth(10) << FileTypesList.value(x.second) / 1024 <<
+                    qSetFieldWidth(3) << "KB";
+                    if (x.first < 0) {
+                        out << qSetFieldWidth(8) << "< 0.01 %\n";
+                    } else
+                        out << qSetFieldWidth(8) << QString::number(x.first, 'f', 2).append(" %") << "\n";
     }
     out.reset();
 }
@@ -61,8 +75,9 @@ void GroupByTypes::explore(const QString& path)
     }
     QMap<QString, qint64> fileTypesList;
     getFileTypesAndSizes(path, fileTypesList);
-    auto totalSize = Common::getTotalSize(path);
+    auto totalSize = Common::sumSizes(fileTypesList);
     auto fileTypesPercantage = getFileTypesPercentOfTotal(totalSize, fileTypesList);
-    PrintFileTypesListAndPercents(fileTypesList, fileTypesPercantage);
+    auto sortedFileTypesPercantage = sortByPercent(fileTypesPercantage);
+    PrintFileTypesListAndPercents(fileTypesList, sortedFileTypesPercantage);
 }
 
