@@ -10,7 +10,7 @@ int main()
     Explorer* e = new Explorer(gpf);
     e->explore("C:/QtProjects/lab3/testFolder");
     e->setStrategy(gpt);
-    e->explore("C:/QtProjects/lab3/testFolder");
+    e->explore("C:/QtProjects/lab3/empty");
     delete gpf;
     delete gpt;
     delete e;

@@ -25,10 +25,16 @@ void GroupByTypes::getFileTypesAndSizes(const QString& path, QMap<QString, qint6
 QMap<QString, double> GroupByTypes::getFileTypesPercentOfTotal(qint64& totalSize, QMap<QString, qint64>& FileTypesList) const
 {
     QMap<QString, double> FileTypesListPercentage;
+    double percent;
     for (auto it = FileTypesList.begin(); it != FileTypesList.end(); ++it) {
-        auto percent = double(it.value() * 100) / totalSize;
-        if (percent < 0.01)
-            percent = -percent;
+        if (it.value() == 0) {
+            percent = 0.0;
+        }
+        else {
+            percent = double(it.value() * 100) / totalSize;
+            if (percent < 0.01)
+                percent = -percent;
+        }
         FileTypesListPercentage.insert(it.key(), percent);
     }
     return FileTypesListPercentage;

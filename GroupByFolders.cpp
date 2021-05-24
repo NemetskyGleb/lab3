@@ -17,12 +17,20 @@ qint64 getCurDirSize(const QString& path)
 QMap<QString, double> GroupByFolders::getFoldersPercentOfTotal(qint64& totalSize, QMap<QString, qint64>& FoldersList) const
 {
 	QMap<QString, double> foldersListPercentage;
+    double percent;
 	for (auto it = FoldersList.begin(); it != FoldersList.end(); ++it) {
-        auto percent = double(it.value() * 100) / totalSize;
-        // метка для слишком маленьких папок
-        if (percent < 0.01)
-            percent = -percent;
-		foldersListPercentage.insert(it.key(), percent);
+        if (it.value() == 0) {
+            percent = 0.0;
+        }
+        else
+        {
+            percent = double(it.value() * 100) / totalSize;
+            // метка для слишком маленьких папок
+            if (percent < 0.01)
+                percent = -percent;
+        }
+        foldersListPercentage.insert(it.key(), percent);
+
 	}
 	return foldersListPercentage;
 }
@@ -59,7 +67,7 @@ void GroupByFolders::PrintFoldersSizesAndPercentage(const QMap<QString, qint64>&
 {
     QTextStream out(stdout);
     for (auto&& x : FoldersAndPercentage) {
-            out << qSetFieldWidth(45) << Qt::left << x.second << qSetFieldWidth(10)  << FoldersAndTypes.value(x.second) / 1024
+            out << qSetFieldWidth(45) << x.second << qSetFieldWidth(10)  << FoldersAndTypes.value(x.second) / 1024
                       << qSetFieldWidth(4)<< "KB";
             if (x.first < 0) {
                 out << qSetFieldWidth(8) << "< 0.01 %\n";
