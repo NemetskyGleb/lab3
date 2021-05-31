@@ -8,7 +8,7 @@
 void GroupByTypes::getFileTypesAndSizes(const QString& path, QMap<QString, qint64>& FileTypesList)
 {
     QDir dir(path);
-    for (const auto& it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden, QDir::Name | QDir::Type | QDir::Size)) {
+    for (const auto& it : dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden, QDir::Name | QDir::Type)) {
             if (it.isDir() && !it.isSymLink()) {
                 getFileTypesAndSizes(it.absoluteFilePath(), FileTypesList);
             } else  {
@@ -49,41 +49,57 @@ QList<QPair<double, QString>> GroupByTypes::sortByPercent(const QMap<QString, do
     return sortedMap;
 }
 
+QList<Data> GroupByTypes::CombineData(const QMap<QString, qint64> &FileTypesList, const QList<QPair<double, QString> > &FileTypesPercantage)
+{
+    QList<Data> data;
+    for (auto&& x : FileTypesPercantage) {
+        if (x.first < 0) {
+            data.push_back(Data(x.second, QString::number(FileTypesList.value(x.second)), QString("< 0.01 %")));
+        }
+        data.push_back(Data("*." + x.second, QString::number(FileTypesList.value(x.second)), QString::number(x.first, 'f', 2).append(" %")));
+    }
+    return data;
+}
+
 void GroupByTypes::PrintFileTypesListAndPercents(const QMap<QString, qint64>& FileTypesList, const QList<QPair<double, QString>> FileTypesPercantage) const
 {
     QTextStream out(stdout);
+
     if (FileTypesPercantage.isEmpty()) {
         return;
     }
     for (auto&& x : FileTypesPercantage) {
-        out << qSetFieldWidth(15) <<   "*." + x.second <<
-                    qSetFieldWidth(10) << FileTypesList.value(x.second) / 1024 <<
-                    qSetFieldWidth(3) << "KB";
+        out.setFieldAlignment(QTextStream::AlignLeft);
+        out << qSetFieldWidth(35) <<   "*." + x.second <<
+               qSetFieldWidth(10) << FileTypesList.value(x.second) / 1024 <<
+               qSetFieldWidth(3) << "KB";
                     if (x.first < 0) {
-                        out << qSetFieldWidth(8) << "< 0.01 %\n";
+                        out << qSetFieldWidth(7) << "< 0.01 %" << qSetFieldWidth(0) << Qt::endl;
                     } else
-                        out << qSetFieldWidth(8) << QString::number(x.first, 'f', 2).append(" %") << "\n";
+                        out << qSetFieldWidth(7) << QString::number(x.first, 'f', 2).append(" %") << qSetFieldWidth(0) << Qt::endl;;
     }
     out.reset();
 }
 
 
-void GroupByTypes::explore(const QString& path)
+QList<Data> GroupByTypes::explore(const QString& path)
 {
     QDir folder(path);
     if (!folder.exists() && !folder.isReadable()) {
         qDebug() << "Error! Folder doesn't exist or it's symlink" << Qt::endl;
-        return;
+        return QList<Data>();
     }
     if (folder.isEmpty()) {
         qDebug() << "Folder is empty!" << Qt::endl;
-        return;
+        return QList<Data>();
     }
     QMap<QString, qint64> fileTypesList;
     getFileTypesAndSizes(path, fileTypesList);
     auto totalSize = Common::sumSizes(fileTypesList);
     auto fileTypesPercantage = getFileTypesPercentOfTotal(totalSize, fileTypesList);
     auto sortedFileTypesPercantage = sortByPercent(fileTypesPercantage);
-    PrintFileTypesListAndPercents(fileTypesList, sortedFileTypesPercantage);
+//    PrintFileTypesListAndPercents(fileTypesList, sortedFileTypesPercantage);
+    auto data = CombineData(fileTypesList, sortedFileTypesPercantage);
+    return data;
 }
 
