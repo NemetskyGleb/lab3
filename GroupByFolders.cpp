@@ -19,18 +19,15 @@ QMap<QString, double> GroupByFolders::getFoldersPercentOfTotal(qint64& totalSize
 	QMap<QString, double> foldersListPercentage;
     double percent;
 	for (auto it = FoldersList.begin(); it != FoldersList.end(); ++it) {
-        if (it.value() == 0) {
-            percent = 0.0;
-        }
-        else
-        {
+        if (totalSize != 0) {
             percent = double(it.value() * 100) / totalSize;
             // метка для слишком маленьких папок
-            if (percent < 0.01)
+            if (percent < 0.01 && percent != 0)
                 percent = -percent;
+        } else {
+            percent = 0;
         }
         foldersListPercentage.insert(it.key(), percent);
-
 	}
 	return foldersListPercentage;
 }
@@ -38,7 +35,7 @@ QMap<QString, double> GroupByFolders::getFoldersPercentOfTotal(qint64& totalSize
 QList<QPair<double, QString>> sortByPercent(const QMap<QString, double>& FoldersAndPercentage)
 {
     QList<QPair<double, QString>> sortedMap;
-    for (auto x : FoldersAndPercentage.keys()) {
+    for (const auto& x : FoldersAndPercentage.keys()) {
       sortedMap.append(QPair<double, QString>(FoldersAndPercentage[x], x));
     }
     // Пропускаем корневую папку
@@ -84,8 +81,9 @@ QList<Data> GroupByFolders::CombineData(const QMap<QString, qint64> &FoldersAndT
     for (auto&& x : FoldersAndPercentage) {
         if (x.first < 0) {
             data.push_back(Data(x.second, QString::number(FoldersAndTypes.value(x.second)), QString("< 0.01 %")));
+        } else {
+            data.push_back(Data(x.second, QString::number(FoldersAndTypes.value(x.second)), QString::number(x.first, 'f', 2).append(" %")));
         }
-        data.push_back(Data(x.second, QString::number(FoldersAndTypes.value(x.second)), QString::number(x.first, 'f', 2).append(" %")));
     }
     return data;
 }

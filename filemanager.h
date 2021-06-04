@@ -2,7 +2,10 @@
 #define FILEMANAGER_H
 
 #include <QWidget>
+#include <QItemSelection>
 #include "Data.h"
+#include "FileBrowserModel.h"
+#include <memory>
 
 namespace Ui {
     class FileManager;
@@ -17,18 +20,25 @@ class FileManager : public QWidget
 
 public:
     explicit FileManager(QWidget *parent = nullptr);
+    void displayTableModel();
     ~FileManager();
 enum class GroupedBy {
-    Folders = 1,
+    Folders,
     Types
 };
 
+protected slots:
+    void selectionGroup(int index);
+    void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
 private:
     Ui::FileManager *ui;
-    QFileSystemModel* modelDir;
+    QFileSystemModel* dirModel;
     Explorer* explorer;
     QList<Data> data;
-    GroupedBy grouping = GroupedBy::Folders;
+    QString path;
+    GroupedBy grouping;
+    std::shared_ptr<FileBrowserModel> fmodel;
 };
 
 #endif // FILEMANAGER_H

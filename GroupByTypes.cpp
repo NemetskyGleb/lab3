@@ -55,8 +55,9 @@ QList<Data> GroupByTypes::CombineData(const QMap<QString, qint64> &FileTypesList
     for (auto&& x : FileTypesPercantage) {
         if (x.first < 0) {
             data.push_back(Data(x.second, QString::number(FileTypesList.value(x.second)), QString("< 0.01 %")));
-        }
+        } else {
         data.push_back(Data("*." + x.second, QString::number(FileTypesList.value(x.second)), QString::number(x.first, 'f', 2).append(" %")));
+        }
     }
     return data;
 }
