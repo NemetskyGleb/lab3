@@ -14,11 +14,11 @@ FileManager::FileManager(QWidget *parent) :
     ui->setupUi(this);
     dirModel = new QFileSystemModel(this);
     grouping = GroupedBy::Folders;
-    IExplore* gtype = new GroupByFolders;
-    explorer = new Explorer(gtype);
+    fmodel = std::make_shared<FileBrowserModel>();
+    explorer = new Explorer();
 
     this->setMinimumSize(1200, 500);
-    dirModel->setFilter(QDir::AllDirs | QDir::NoDotAndDotDot);
+    dirModel->setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Hidden);
     dirModel->setRootPath(QDir::currentPath());
     ui->treeView->setModel(dirModel);
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -37,7 +37,7 @@ void FileManager::displayTableModel()
         data = explorer->explore(path);
         if(data.isEmpty())
             return;
-        fmodel = std::make_shared<FileBrowserModel>(data);
+        fmodel->setModelData(data);
         ui->tableView->setModel(fmodel.get());
         break;
     case GroupedBy::Types:
@@ -45,7 +45,7 @@ void FileManager::displayTableModel()
         data = explorer->explore(path);
         if(data.isEmpty())
             return;
-        fmodel = std::make_shared<FileBrowserModel>(data);
+        fmodel->setModelData(data);
         ui->tableView->setModel(fmodel.get());
         break;
     default:
@@ -53,11 +53,11 @@ void FileManager::displayTableModel()
         data = explorer->explore(path);
         if(data.isEmpty())
             return;
-        fmodel = std::make_shared<FileBrowserModel>(data);
+        fmodel->setModelData(data);
         ui->tableView->setModel(fmodel.get());
         break;
     }
-    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 FileManager::~FileManager()

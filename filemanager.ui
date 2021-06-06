@@ -42,6 +42,11 @@
         <widget class="QComboBox" name="displayBox">
          <item>
           <property name="text">
+           <string>Display in table</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Display in pie</string>
           </property>
          </item>

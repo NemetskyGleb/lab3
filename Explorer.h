@@ -16,14 +16,17 @@ class Explorer
 private:
     IExplore *p = nullptr;
 public:
+    Explorer() = default;
     explicit Explorer(IExplore* l) : p(l) {}
     QList<Data> explore(const QString& path) {
         return p->explore(path);
     }
     void setStrategy(IExplore* strategy) {
-        if (!p) delete p;
+        if (p)
+            delete p;
         p = strategy;
     }
+    ~Explorer() { if (p) delete p; }
 };
 
 namespace Common {

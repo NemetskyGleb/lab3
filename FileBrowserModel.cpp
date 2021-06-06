@@ -57,6 +57,8 @@ int FileBrowserModel::columnCount(const QModelIndex& parent) const
 
   void FileBrowserModel::setModelData(const QList<Data> &data)
   {
-      _data = data;
+      beginResetModel();
+       _data = data;
+      endResetModel();
   }
 

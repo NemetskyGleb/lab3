@@ -3,6 +3,7 @@
 #include <QAbstractTableModel>
 #include <QList>
 #include "Data.h"
+#include <QDebug>
 
 class FileBrowserModel : public QAbstractTableModel
 {
@@ -15,9 +16,10 @@ private:
         PERCENT
     };
 
-    void setModelData(const QList<Data>& data);
 public:
+    FileBrowserModel() = default;
     explicit FileBrowserModel(const QList<Data>& data, QObject* parent = nullptr);
+    void setModelData(const QList<Data>& data);
     ~FileBrowserModel() = default;
     // методы необходимые для переопределения
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
