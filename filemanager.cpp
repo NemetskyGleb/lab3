@@ -21,7 +21,9 @@ FileManager::FileManager(QWidget *parent) :
     dirModel->setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Hidden);
     dirModel->setRootPath(QDir::currentPath());
     ui->treeView->setModel(dirModel);
+    ui->tableView->setModel(fmodel.get());
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     connect(ui->groupBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FileManager::selectionGroup);
     connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this,  &FileManager::selectionChanged);
@@ -34,30 +36,16 @@ void FileManager::displayTableModel()
     switch (grouping) {
     case GroupedBy::Folders:
         explorer->setStrategy(new GroupByFolders);
-        data = explorer->explore(path);
-        if(data.isEmpty())
-            return;
-        fmodel->setModelData(data);
-        ui->tableView->setModel(fmodel.get());
         break;
     case GroupedBy::Types:
         explorer->setStrategy(new GroupByTypes);
-        data = explorer->explore(path);
-        if(data.isEmpty())
-            return;
-        fmodel->setModelData(data);
-        ui->tableView->setModel(fmodel.get());
         break;
     default:
         explorer->setStrategy(new GroupByFolders);
-        data = explorer->explore(path);
-        if(data.isEmpty())
-            return;
-        fmodel->setModelData(data);
-        ui->tableView->setModel(fmodel.get());
         break;
     }
-    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    data = explorer->explore(path);
+    fmodel->setModelData(data);
 }
 
 FileManager::~FileManager()
