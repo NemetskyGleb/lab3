@@ -5,8 +5,8 @@
 class GroupByTypes : public IExplore {
 public:
     explicit GroupByTypes() = default;
-    virtual ~GroupByTypes() = default;
-    QList<Data> explore(const QString& path) override;
+    virtual ~GroupByTypes() {}
+    void explore(const QString& path) override;
 private:
     void getFileTypesAndSizes(const QString& path, QMap<QString, qint64>& FileTypesList);
     QMap<QString, double> getFileTypesPercentOfTotal(qint64& totalSize, QMap<QString, qint64>& FileTypesList) const;
