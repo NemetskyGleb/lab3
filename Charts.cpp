@@ -15,6 +15,7 @@ using namespace QtCharts;
 Charts::~Charts()
 {
     delete chart_view;
+    delete chart_model;
 }
 
 Charts::Charts(std::unique_ptr<Charts> &&c, QLayout *l)
@@ -22,13 +23,13 @@ Charts::Charts(std::unique_ptr<Charts> &&c, QLayout *l)
     chart = std::move(c);
     chart_view = new QChartView();
     addWidgetToLayout(l);
+    chart_model = new QChart();
 }
 
-QChart* Charts::createChart(const std::unique_ptr<QList<Data> > &data) const
+void Charts::setChart(const std::unique_ptr<QList<Data> > &data) const
 {
-    QChart* chart = new QChart();
     // отображаем легенду справа
-    chart->legend()->setAlignment(Qt::AlignRight);
+    chart_model->legend()->setAlignment(Qt::AlignRight);
 
     // подсчитываем общий размер папки
     qint64 total_size = 0;
@@ -37,8 +38,8 @@ QChart* Charts::createChart(const std::unique_ptr<QList<Data> > &data) const
     }
     // в случае когда папка пуста выводим надпись
     if (total_size == 0 || data->isEmpty()) {
-        chart->setTitle("Folder is empty");
-        return chart;
+        chart_model->setTitle("Folder is empty");
+        return;
     }
     // элементы идущие после 6 относим к маленьким
     // подсчитываем их общий размер и размещаем их в категорию others
@@ -54,9 +55,7 @@ QChart* Charts::createChart(const std::unique_ptr<QList<Data> > &data) const
         data->push_back(Data("Others", QString::number(others_size), QString::number(percent, 'f', 2).append(" %"), (qreal)others_size / total_size));
     }
     // набор данных устанавливаются в диаграмму
-    setDataToChart(chart, data);
-
-    return chart;
+    setDataToChart(chart_model, data);
 }
 
 void Charts::addWidgetToLayout(QLayout *l)
@@ -66,7 +65,8 @@ void Charts::addWidgetToLayout(QLayout *l)
 
 void Charts::UpdateDisplay(const std::unique_ptr<QList<Data> > &data) const
 {
-    chart_view->setChart(chart->createChart(data));
+    setChart(data);
+    chart_view->setChart(chart_model);
 }
 
 

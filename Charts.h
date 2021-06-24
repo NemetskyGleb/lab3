@@ -22,7 +22,7 @@ public:
     Charts() = default;
     Charts(std::unique_ptr<Charts>&& c, QLayout* l);
 
-    QChart* createChart(const std::unique_ptr<QList<Data>>& data) const;
+    void setChart(const std::unique_ptr<QList<Data>>& data) const;
 
     // добавление данных в диаграмму
     void addWidgetToLayout(QLayout* l);
@@ -34,6 +34,7 @@ public:
 private:
     QChartView* chart_view;
     std::unique_ptr<Charts> chart;
+    QChart* chart_model;
 };
 
 // создание круговой диаграммы
