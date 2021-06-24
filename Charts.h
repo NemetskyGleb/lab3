@@ -27,10 +27,10 @@ public:
     // добавление данных в диаграмму
     void addWidgetToLayout(QLayout* l);
     void UpdateDisplay(const std::unique_ptr<QList<Data> > &data) const override;
-    void setDataToChart(QChart* c, const std::unique_ptr<QList<Data>>& data) const;
+    void setDataToChart(const std::unique_ptr<QList<Data>>& data) const;
     void removeSeriesFromChart(QChart* c) const;
     virtual QAbstractSeries* addDataToSeries(const std::unique_ptr<QList<Data>>& data) const = 0;
-    void addSeriesToChart(QChart* c, QAbstractSeries* series) const;
+    void addSeriesToChart(QAbstractSeries* series) const;
 private:
     QChartView* chart_view;
     QChart* chart_model;

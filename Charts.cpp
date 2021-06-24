@@ -11,25 +11,22 @@ using namespace QtCharts;
 
 Charts::~Charts()
 {
-    if (chart_view) {
-        delete chart_view;
-    }
-    if (chart_model)
-        delete chart_model;
+    delete chart_model;
+    delete chart_view;
 }
 
 Charts::Charts(QLayout *l)
 {
-    chart_view = new QChartView();
-    addWidgetToLayout(l);
     chart_model = new QChart();
+    chart_view = new QChartView();
+    // отображаем легенду справа
+    chart_model->legend()->setAlignment(Qt::AlignRight);
+    chart_view->setChart(chart_model);
+    addWidgetToLayout(l);
 }
 
 void Charts::setChart(const std::unique_ptr<QList<Data> > &data) const
 {
-    // отображаем легенду справа
-    chart_model->legend()->setAlignment(Qt::AlignRight);
-
     // подсчитываем общий размер папки
     qint64 total_size = 0;
     for (auto& x : *data) {
@@ -54,7 +51,7 @@ void Charts::setChart(const std::unique_ptr<QList<Data> > &data) const
         data->push_back(Data("Others", QString::number(others_size), QString::number(percent, 'f', 2).append(" %"), (qreal)others_size / total_size));
     }
     // набор данных устанавливаются в диаграмму
-    setDataToChart(chart_model, data);
+    setDataToChart(data);
 }
 
 void Charts::addWidgetToLayout(QLayout *l)
@@ -65,7 +62,6 @@ void Charts::addWidgetToLayout(QLayout *l)
 void Charts::UpdateDisplay(const std::unique_ptr<QList<Data> > &data) const
 {
     setChart(data);
-    chart_view->setChart(chart_model);
 }
 
 
@@ -74,9 +70,9 @@ void Charts::removeSeriesFromChart(QChart *c) const
     c->removeAllSeries();
 }
 
-void Charts::addSeriesToChart(QChart *c, QAbstractSeries *series) const
+void Charts::addSeriesToChart(QAbstractSeries *series) const
 {
-    c->addSeries(series);
+    chart_model->addSeries(series);
 }
 
 
@@ -87,11 +83,11 @@ void Charts::addSeriesToChart(QChart *c, QAbstractSeries *series) const
  * @param data - данные для заполнения
  */
 
-void Charts::setDataToChart(QChart *c, const std::unique_ptr<QList<Data> > &data) const
+void Charts::setDataToChart(const std::unique_ptr<QList<Data> > &data) const
 {
-    removeSeriesFromChart(c);
+    removeSeriesFromChart(chart_model);
     QAbstractSeries* series = addDataToSeries(data);
-    addSeriesToChart(c, series);
+    addSeriesToChart(series);
 }
 
 
