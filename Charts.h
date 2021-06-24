@@ -20,7 +20,7 @@ class Charts : public FileBrowserObserver
 public:
     virtual ~Charts();
     Charts() = default;
-    Charts(std::unique_ptr<Charts>&& c, QLayout* l);
+    Charts(QLayout* l);
 
     void setChart(const std::unique_ptr<QList<Data>>& data) const;
 
@@ -33,7 +33,6 @@ public:
     void addSeriesToChart(QChart* c, QAbstractSeries* series) const;
 private:
     QChartView* chart_view;
-    std::unique_ptr<Charts> chart;
     QChart* chart_model;
 };
 

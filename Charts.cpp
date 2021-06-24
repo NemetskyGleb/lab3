@@ -8,19 +8,18 @@
 
 using namespace QtCharts;
 
-/**
- * @brief шаблонный метод создающий диаграмму
- * @param data
- */
+
 Charts::~Charts()
 {
-    delete chart_view;
-    delete chart_model;
+    if (chart_view) {
+        delete chart_view;
+    }
+    if (chart_model)
+        delete chart_model;
 }
 
-Charts::Charts(std::unique_ptr<Charts> &&c, QLayout *l)
+Charts::Charts(QLayout *l)
 {
-    chart = std::move(c);
     chart_view = new QChartView();
     addWidgetToLayout(l);
     chart_model = new QChart();
@@ -96,7 +95,7 @@ void Charts::setDataToChart(QChart *c, const std::unique_ptr<QList<Data> > &data
 }
 
 
-BarChart::BarChart(QLayout *l) : Charts(std::make_unique<BarChart>(), l) {}
+BarChart::BarChart(QLayout *l) : Charts(l) {}
 
 
 QAbstractSeries *BarChart::addDataToSeries(const std::unique_ptr<QList<Data> > &data) const
@@ -111,7 +110,7 @@ QAbstractSeries *BarChart::addDataToSeries(const std::unique_ptr<QList<Data> > &
 }
 
 
-PieChart::PieChart(QLayout *l) : Charts(std::make_unique<PieChart>(), l) {}
+PieChart::PieChart(QLayout *l) : Charts(l) {}
 
 
 QAbstractSeries *PieChart::addDataToSeries(const std::unique_ptr<QList<Data> > &data) const
