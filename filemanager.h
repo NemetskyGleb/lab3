@@ -46,8 +46,8 @@ private:
       // адаптеры
     FileBrowserObserver* FileBrowserView;
     FileBrowserObserver* list_view_adapter;
-    FileBrowserObserver* pie_chart_adapter;
-    FileBrowserObserver* bar_chart_adapter;
+    FileBrowserObserver* pie_chart;
+    FileBrowserObserver* bar_chart;
 
     QString path;
 };

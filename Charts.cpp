@@ -3,11 +3,27 @@
 #include <QPieSeries>
 #include <QBarSet>
 #include <QGraphicsLayout>
+#include <QChartView>
+#include <QLayout>
+
+using namespace QtCharts;
 
 /**
  * @brief шаблонный метод создающий диаграмму
  * @param data
  */
+Charts::~Charts()
+{
+    delete chart_view;
+}
+
+Charts::Charts(std::unique_ptr<Charts> &&c, QLayout *l)
+{
+    chart = std::move(c);
+    chart_view = new QChartView();
+    addWidgetToLayout(l);
+}
+
 QChart* Charts::createChart(const std::unique_ptr<QList<Data> > &data) const
 {
     QChart* chart = new QChart();
@@ -38,10 +54,33 @@ QChart* Charts::createChart(const std::unique_ptr<QList<Data> > &data) const
         data->push_back(Data("Others", QString::number(others_size), QString::number(percent, 'f', 2).append(" %"), (qreal)others_size / total_size));
     }
     // набор данных устанавливаются в диаграмму
-    addDataToChart(chart, data);
+    setDataToChart(chart, data);
 
     return chart;
 }
+
+void Charts::addWidgetToLayout(QLayout *l)
+{
+    l->addWidget(chart_view);
+}
+
+void Charts::UpdateDisplay(const std::unique_ptr<QList<Data> > &data) const
+{
+    chart_view->setChart(chart->createChart(data));
+}
+
+
+void Charts::removeSeriesFromChart(QChart *c) const
+{
+    c->removeAllSeries();
+}
+
+void Charts::addSeriesToChart(QChart *c, QAbstractSeries *series) const
+{
+    c->addSeries(series);
+}
+
+
 
 /**
  * @brief Заполнение вертикальной диаграммы данными
@@ -49,37 +88,39 @@ QChart* Charts::createChart(const std::unique_ptr<QList<Data> > &data) const
  * @param data - данные для заполнения
  */
 
-void BarChart::addDataToChart(QChart *c, const std::unique_ptr<QList<Data> > &data) const
+void Charts::setDataToChart(QChart *c, const std::unique_ptr<QList<Data> > &data) const
+{
+    removeSeriesFromChart(c);
+    QAbstractSeries* series = addDataToSeries(data);
+    addSeriesToChart(c, series);
+}
+
+
+BarChart::BarChart(QLayout *l) : Charts(std::make_unique<BarChart>(), l) {}
+
+
+QAbstractSeries *BarChart::addDataToSeries(const std::unique_ptr<QList<Data> > &data) const
 {
     QBarSeries* series = new QBarSeries();
-//    series->setBarWidth(1); // 100% масштаб диаграммы
-
     for (auto& item : *data) {
         QBarSet* set = new QBarSet(item._name + " (" + item._percent.toHtmlEscaped() + ")");
         set->append(item._ratio);
         series->append(set);
     }
-    c->addSeries(series);
+    return series;
 }
 
 
+PieChart::PieChart(QLayout *l) : Charts(std::make_unique<PieChart>(), l) {}
 
-/**
- * @brief Заполнение круговой диаграммы данными
- * @param c - сама диграмма
- * @param data - данные для заполнения
- */
 
-void PieChart::addDataToChart(QChart *c, const std::unique_ptr<QList<Data> > &data) const
+QAbstractSeries *PieChart::addDataToSeries(const std::unique_ptr<QList<Data> > &data) const
 {
     QPieSeries* series = new QPieSeries();
-    series->setPieSize(1); // 100% масштаб диаграммы
-
     for (auto& item : *data) {
         series->append(item._name + " (" + item._percent.toHtmlEscaped() + ")", item._ratio);
     }
-    c->addSeries(series);
-
+    return series;
 }
 
 

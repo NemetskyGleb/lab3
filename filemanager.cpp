@@ -5,8 +5,7 @@
 #include "GroupByFolders.h"
 #include "FileBrowserModel.h"
 #include "ListViewAdapter.h"
-#include "PieChartAdapter.h"
-#include "BarChartAdapter.h"
+#include "Charts.h"
 
 #include <QDebug>
 
@@ -21,8 +20,8 @@ FileManager::FileManager(QWidget *parent) :
     dirModel = new QFileSystemModel(this);
 
     list_view_adapter = new ListViewAdapter(ui->stackedWidget->layout());
-    pie_chart_adapter = new PieChartAdapter(ui->stackedWidget->layout());
-    bar_chart_adapter = new BarChartAdapter(ui->stackedWidget->layout());
+    pie_chart = new PieChart(ui->stackedWidget->layout());
+    bar_chart = new BarChart(ui->stackedWidget->layout());
 
     FileBrowserView = list_view_adapter;
     groupingStrategy->Attach(FileBrowserView);
@@ -45,8 +44,8 @@ FileManager::~FileManager()
 
     // очищаем память из под адаптеров
     delete list_view_adapter;
-    delete pie_chart_adapter;
-    delete bar_chart_adapter;
+    delete pie_chart;
+    delete bar_chart;
 
     delete FolderGrouping;
     delete TypesGrouping;
@@ -70,10 +69,10 @@ void FileManager::selectionDisplay(int index)
             FileBrowserView = list_view_adapter;
             break;
         case 1:
-            FileBrowserView = pie_chart_adapter;
+            FileBrowserView = pie_chart;
             break;
         case 2:
-            FileBrowserView = bar_chart_adapter;
+            FileBrowserView = bar_chart;
             break;
     }
     groupingStrategy->Attach(FileBrowserView);

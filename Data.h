@@ -1,7 +1,6 @@
 #ifndef DATA_H
 #define DATA_H
 #include <QString>
-#include <QtCharts/QChart>
 
 struct Data
 {
