@@ -19,6 +19,7 @@ Charts::Charts(QLayout *l)
 {
     chart_model = new QChart();
     chart_view = new QChartView();
+    chart_view->setRenderHint(QPainter::Antialiasing); // сглаживание
     // отображаем легенду справа
     chart_model->legend()->setAlignment(Qt::AlignRight);
     chart_view->setChart(chart_model);
@@ -32,9 +33,11 @@ void Charts::setChart(const std::unique_ptr<QList<Data> > &data) const
     for (auto& x : *data) {
         total_size += x._size.toLongLong();
     }
+    chart_model->setTitle("");
     // в случае когда папка пуста выводим надпись
     if (total_size == 0 || data->isEmpty()) {
         chart_model->setTitle("Folder is empty");
+        chart_model->removeAllSeries();
         return;
     }
     // элементы идущие после 6 относим к маленьким
@@ -79,7 +82,6 @@ void Charts::addSeriesToChart(QAbstractSeries *series) const
 
 /**
  * @brief Заполнение вертикальной диаграммы данными
- * @param c - сама диграмма
  * @param data - данные для заполнения
  */
 
@@ -97,6 +99,7 @@ BarChart::BarChart(QLayout *l) : Charts(l) {}
 QAbstractSeries *BarChart::addDataToSeries(const std::unique_ptr<QList<Data> > &data) const
 {
     QBarSeries* series = new QBarSeries();
+    series->setBarWidth(1);
     for (auto& item : *data) {
         QBarSet* set = new QBarSet(item._name + " (" + item._percent.toHtmlEscaped() + ")");
         set->append(item._ratio);
@@ -112,6 +115,7 @@ PieChart::PieChart(QLayout *l) : Charts(l) {}
 QAbstractSeries *PieChart::addDataToSeries(const std::unique_ptr<QList<Data> > &data) const
 {
     QPieSeries* series = new QPieSeries();
+    series->setPieSize(1);
     for (auto& item : *data) {
         series->append(item._name + " (" + item._percent.toHtmlEscaped() + ")", item._ratio);
     }
